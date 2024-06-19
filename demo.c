@@ -2,7 +2,7 @@
  * demo.c         Tinier AES
  * Quick Work Flow Demonstation AES CTR Mode
  *
- * buid with gcc -o demo.o demo.c -Wall -Wextra -Wpedantic
+ * buid with gcc demo.c aes.c -o demo.o -Wall -Wextra -Wpedantic
  *-----------------------------------------------------------------------------*/
 
 #include <string.h>
@@ -11,7 +11,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "aes.c"
+#include "aes.h"
 
 int main ()
 {

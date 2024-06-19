@@ -4,7 +4,6 @@
  *
  * Modified Tiny AES code for more variable nk/nr/nb values, all in one file
  * https://github.com/kokke/tiny-AES-c
- *
  *-----------------------------------------------------------------------------*/
 
 
@@ -39,6 +38,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <stddef.h>
+#include "aes.h"
 
 #define AES_BLOCKLEN 16
 unsigned Nb = 4;
@@ -60,16 +60,6 @@ void AES_ECB_decrypt(const struct AES_ctx* ctx, uint8_t* buf);
 void AES_CBC_encrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, size_t length);
 void AES_CBC_decrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, size_t length);
 void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, size_t length);
-
-//bit and byte utility prototyes
-uint64_t convert_bits_into_output(uint8_t * input, int len);
-void pack_bit_array_into_byte_array (uint8_t * input, uint8_t * output, int len);
-void unpack_byte_array_into_bit_array (uint8_t * input, uint8_t * output, int len);
-
-//taylor made aes function prototypes
-void aes_ctr_bitwise_payload_crypt (uint8_t * iv, uint8_t * key, uint8_t * payload, int type);
-void aes_ctr_bytewise_payload_crypt (uint8_t * iv, uint8_t * key, uint8_t * payload, int type);
-void aes_ofb_keystream_output (uint8_t * iv, uint8_t * key, uint8_t * output, int type, int nblocks);
 
 typedef uint8_t state_t[4][4];
 
