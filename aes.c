@@ -524,19 +524,19 @@ void aes_ofb_keystream_output (uint8_t * iv, uint8_t * key, uint8_t * output, in
   memset (input_register, 0, sizeof(input_register));
 
   //Set values specific to type (128/192/256)
-  if (type == 1) //128
+  if (type == 0) //128
   {
     Nb = 4;
     Nk = 4;
     Nr = 10;
   }
-  else if (type == 2) //192
+  else if (type == 1) //192
   {
     Nb = 4;
     Nk = 6;
     Nr = 12;
   }
-  else //if (type == 3) //256
+  else //if (type == 2) //256
   {
     Nb = 4;
     Nk = 8;
@@ -566,19 +566,19 @@ void aes_ctr_bitwise_payload_crypt (uint8_t * iv, uint8_t * key, uint8_t * paylo
 {
 
   //Set values specific to type (128/192/256)
-  if (type == 1) //128
+  if (type == 0) //128
   {
     Nb = 4;
     Nk = 4;
     Nr = 10;
   }
-  else if (type == 2) //192
+  else if (type == 1) //192
   {
     Nb = 4;
     Nk = 6;
     Nr = 12;
   }
-  else //if (type == 3) //256
+  else //if (type == 2) //256
   {
     Nb = 4;
     Nk = 8;
@@ -612,19 +612,19 @@ void aes_ctr_bytewise_payload_crypt (uint8_t * iv, uint8_t * key, uint8_t * payl
 {
 
   //Set values specific to type (128/192/256)
-  if (type == 1) //128
+  if (type == 0) //128
   {
     Nb = 4;
     Nk = 4;
     Nr = 10;
   }
-  else if (type == 2) //192
+  else if (type == 1) //192
   {
     Nb = 4;
     Nk = 6;
     Nr = 12;
   }
-  else //if (type == 3) //256
+  else //if (type == 2) //256
   {
     Nb = 4;
     Nk = 8;

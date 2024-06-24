@@ -49,10 +49,10 @@ int main ()
   for (i = 0; i < 16; i++)
       fprintf (stderr, " %02X", payload_bytes[i]);
 
-  //execute aes_ctr with a 256-bit key (type 3)
-  aes_ctr_bytewise_payload_crypt (iv, key, payload_bytes, 3);
+  //execute aes_ctr with a 256-bit key (type 2)
+  aes_ctr_bytewise_payload_crypt (iv, key, payload_bytes, 2);
 
-  //or execute aes_ctr with a bit-wise payload a 256-bit key (type 3)
+  //or execute aes_ctr with a bit-wise payload a 256-bit key (type 2)
   // aes_ctr_bitwise_payload_crypt (iv, key, payload_bits, 3);
   // pack_bit_array_into_byte_array(payload_bits, payload_bytes, 16); //packing optional, for display only
 
