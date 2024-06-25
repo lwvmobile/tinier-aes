@@ -513,7 +513,7 @@ void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, size_t length)
 //byte-wise output of AES OFB Keystream
 //input iv is a 16-byte uint8_t array of initialization vector
 //input key is up to 32-byte uint8_t array of key value
-//input type is the type/len of AES required (1-128, 2-192, 3-256)
+//input type is the type/len of AES required (0-128, 1-192, 2-256)
 //input nblocks is the number of rounds of 16-byte keystream output blocks requried
 //output is a uint8_t bytewise array, each round filled with 16-bytes from aes keystream output
 void aes_ofb_keystream_output (uint8_t * iv, uint8_t * key, uint8_t * output, int type, int nblocks)
@@ -552,11 +552,11 @@ void aes_ofb_keystream_output (uint8_t * iv, uint8_t * key, uint8_t * output, in
   memset (ctx.RoundKey, 0, 240*sizeof(uint8_t));
   KeyExpansion(ctx.RoundKey, key);
 
-  //execute the cipher function, and manipulate input and output register for required number of rounds
+  //execute the cipher function, and copy ciphered input_register to output for required number of rounds
   for (i = 0; i < nblocks; i++)
   {
-    Cipher((state_t*)input_register, ctx.RoundKey);
-    memcpy (output+(i*16), input_register, 16*sizeof(uint8_t) ); //copy output to input register for next round
+    Cipher((state_t*)input_register, ctx.RoundKey); //input_register is returned as output, and is put back in as object feedback
+    memcpy (output+(i*16), input_register, 16*sizeof(uint8_t) ); //copy ciphered input_register to output
   }
         
 }
