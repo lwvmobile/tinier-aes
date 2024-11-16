@@ -3,6 +3,7 @@
  * Quick Work Flow Demonstation for Various AES Modes
  *
  * buid with gcc demo.c aes.c -o demo.o -Wall -Wextra -Wpedantic
+ * run with ./demo.o
  *-----------------------------------------------------------------------------*/
 
 #include <string.h>
