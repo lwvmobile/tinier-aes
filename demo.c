@@ -69,7 +69,6 @@ int main ()
   //   fprintf (stderr, " %02X", input_bytes[i]);
 
   // //or run a simple ECB mode without using an initialization vector
-  // uint8_t output_bytes[16]; memset (output_bytes, 0, 16*sizeof(uint8_t));
   // int de = 1; //1 for encrypt, 0 for decrypt
   // aes_ecb_bytewise_payload_crypt (input_bytes, key, output_bytes, type, de);
 
