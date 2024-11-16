@@ -22,7 +22,9 @@ int main ()
 
   //AES Type/Key Len
   int type = 2; // 0 - 128, 1 - 192, 2 - 256
-  int nblocks = 1; //number of rounds of OFB Keystream Blocks (16-byte blocks) to produce
+
+  //number of rounds of OFB Keystream Blocks (16-byte blocks) to produce
+  int nblocks = 2; //2 or more, first round is usually always discarded in OFB applications
 
   uint8_t key[32];
   for (i = 0; i < 32; i++)
@@ -36,8 +38,8 @@ int main ()
   for (i = 0; i < 16; i++)
     input_bytes[i] = rand() & 0xFF;
 
-  uint8_t output_bytes[16];
-  memset (output_bytes, 0, 16*sizeof(uint8_t));
+  uint8_t output_bytes[32];
+  memset (output_bytes, 0, 32*sizeof(uint8_t));
 
   fprintf (stderr, "\n---------------Tinier-AES Workflow Demo----------------");
 
@@ -83,11 +85,11 @@ int main ()
   //print keystream bytes
   fprintf (stderr, "\nKS:    ");
   for (i = 0; i < 16; i++)
-    fprintf (stderr, " %02X", output_bytes[i]);
+    fprintf (stderr, " %02X", output_bytes[i+16]);
 
   //xor ofb input_bytes against output_bytes (keystream) to cipher/decipher input payload
-  for (i = 0; i < (16*nblocks); i++)
-    input_bytes[i] ^= output_bytes[i];
+  for (i = 0; i < 16*(nblocks-1); i++)
+    input_bytes[i] ^= output_bytes[i+16]; //+16 is the offset for the first round OFB discard
 
   //print ciphered input
   fprintf (stderr, "\nOutput:");
