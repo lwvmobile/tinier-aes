@@ -1,6 +1,6 @@
 /*-------------------------------------------------------------------------------
  * demo.c         Tinier AES
- * Quick Work Flow Demonstation AES CTR Mode
+ * Quick Work Flow Demonstation for Various AES Modes
  *
  * buid with gcc demo.c aes.c -o demo.o -Wall -Wextra -Wpedantic
  *-----------------------------------------------------------------------------*/
@@ -20,6 +20,10 @@ int main ()
   srand(ts); //randomize seed based on current time
   int i = 0;
 
+  //AES Type/Key Len
+  int type = 2; // 0 - 128, 1 - 192, 2 - 256
+  int nblocks = 1; //number of rounds of OFB Keystream Blocks (16-byte blocks) to produce
+
   uint8_t key[32];
   for (i = 0; i < 32; i++)
     key[i] = rand() & 0xFF;
@@ -28,38 +32,70 @@ int main ()
   for (i = 0; i < 16; i++)
     iv[i] = rand() & 0xFF;
 
-  uint8_t payload_bits[128];
-  uint8_t payload_bytes[16];
+  uint8_t input_bytes[16];
+  for (i = 0; i < 16; i++)
+    input_bytes[i] = rand() & 0xFF;
 
-  memset (payload_bits, 0, 128*sizeof(uint8_t));
-  memset (payload_bytes, 0, 16*sizeof(uint8_t));
-  
+  uint8_t output_bytes[16];
+  memset (output_bytes, 0, 16*sizeof(uint8_t));
+
+  fprintf (stderr, "\n---------------Tinier-AES Workflow Demo----------------");
+
   //print key
-  fprintf (stderr, "\nKey:");
+  fprintf (stderr, "\nKey:   ");
   for (i = 0; i < 32; i++)
-      fprintf (stderr, " %02X", key[i]);
+  {
+    if (i == 16)
+      fprintf (stderr, "\n       ");
+    fprintf (stderr, " %02X", key[i]);
+  }
 
   //print iv
-  fprintf (stderr, "\nIV: ");
+  fprintf (stderr, "\nIV:    ");
   for (i = 0; i < 16; i++)
-      fprintf (stderr, " %02X", iv[i]);
+    fprintf (stderr, " %02X", iv[i]);
 
   //print input
   fprintf (stderr, "\nInput: ");
   for (i = 0; i < 16; i++)
-      fprintf (stderr, " %02X", payload_bytes[i]);
+    fprintf (stderr, " %02X", input_bytes[i]);
 
-  //execute aes_ctr with a 256-bit key (type 2)
-  aes_ctr_bytewise_payload_crypt (iv, key, payload_bytes, 2);
+  // //execute aes_ctr with a 256-bit key (type 2)
+  // aes_ctr_bytewise_payload_crypt (iv, key, input_bytes, type);
 
-  //or execute aes_ctr with a bit-wise payload a 256-bit key (type 2)
-  // aes_ctr_bitwise_payload_crypt (iv, key, payload_bits, 3);
-  // pack_bit_array_into_byte_array(payload_bits, payload_bytes, 16); //packing optional, for display only
+  // //print output
+  // fprintf (stderr, "\nOutput:");
+  // for (i = 0; i < 16; i++)
+  //   fprintf (stderr, " %02X", input_bytes[i]);
 
-  //debug output
+  // //or run a simple ECB mode without using an initialization vector
+  // uint8_t output_bytes[16]; memset (output_bytes, 0, 16*sizeof(uint8_t));
+  // int de = 1; //1 for encrypt, 0 for decrypt
+  // aes_ecb_bytewise_payload_crypt (input_bytes, key, output_bytes, type, de);
+
+  // //print output
+  // fprintf (stderr, "\nOutput:");
+  // for (i = 0; i < 16; i++)
+  //   fprintf (stderr, " %02X", output_bytes[i]);
+
+  //or run OFB mode, and create a keystream to XOR on input_bytes
+  aes_ofb_keystream_output (iv, key, output_bytes, type, nblocks);
+
+  //print keystream bytes
+  fprintf (stderr, "\nKS:    ");
+  for (i = 0; i < 16; i++)
+    fprintf (stderr, " %02X", output_bytes[i]);
+
+  //xor ofb input_bytes against output_bytes (keystream) to cipher/decipher input payload
+  for (i = 0; i < (16*nblocks); i++)
+    input_bytes[i] ^= output_bytes[i];
+
+  //print ciphered input
   fprintf (stderr, "\nOutput:");
   for (i = 0; i < 16; i++)
-      fprintf (stderr, " %02X", payload_bytes[i]);
+    fprintf (stderr, " %02X", input_bytes[i]);
+
+  fprintf (stderr, "\n");
 
   return 0;
 }

@@ -513,7 +513,7 @@ void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, size_t length)
 //byte-wise output of AES OFB Keystream
 //input iv is a 16-byte uint8_t array of initialization vector
 //input key is up to 32-byte uint8_t array of key value
-//input type is the type/len of AES required (0-128, 1-192, 2-256)
+//input type is the type/key len of AES required (0-128, 1-192, 2-256)
 //input nblocks is the number of rounds of 16-byte keystream output blocks requried
 //output is a uint8_t bytewise array, each round filled with 16-bytes from aes keystream output
 void aes_ofb_keystream_output (uint8_t * iv, uint8_t * key, uint8_t * output, int type, int nblocks)
@@ -558,6 +558,58 @@ void aes_ofb_keystream_output (uint8_t * iv, uint8_t * key, uint8_t * output, in
     Cipher((state_t*)input_register, ctx.RoundKey); //input_register is returned as output, and is put back in as object feedback
     memcpy (output+(i*16), input_register, 16*sizeof(uint8_t) ); //copy ciphered input_register to output
   }
+        
+}
+
+//byte-wise output of AES ECB Ciphering/Deciphering
+//input is uint8_t byte-wise (16-bytes) data to be ciphered or deciphered
+//input key is up to 32-byte uint8_t array of key value
+//input type is the type/len of AES required (0-128, 1-192, 2-256)
+//output is a uint8_t bytewise array of ciphered or deciphered input
+//de is a bit-flag signalling to run Cipher (encrypt) on 1, or InvCipher (decrypt) on 0 
+void aes_ecb_bytewise_payload_crypt (uint8_t * input, uint8_t * key, uint8_t * output, int type, int de)
+{
+
+  uint8_t input_register[16]; //ECB Input Register
+  memset (input_register, 0, sizeof(input_register));
+
+  //Set values specific to type (128/192/256)
+  if (type == 0) //128
+  {
+    Nb = 4;
+    Nk = 4;
+    Nr = 10;
+  }
+  else if (type == 1) //192
+  {
+    Nb = 4;
+    Nk = 6;
+    Nr = 12;
+  }
+  else //if (type == 2) //256
+  {
+    Nb = 4;
+    Nk = 8;
+    Nr = 14;
+  }
+
+  struct AES_ctx ctx;
+
+  //load input_register with received input (ECB Payload)
+  memcpy (input_register, input, 16*sizeof(uint8_t) );
+
+  //initialize the key variable for the Cipher function
+  memset (ctx.RoundKey, 0, 240*sizeof(uint8_t));
+  KeyExpansion(ctx.RoundKey, key);
+
+  //run enncryption or decryption depending on de value
+  if (de) //encrypt
+    Cipher((state_t*)input_register, ctx.RoundKey);
+  else   //decrypt
+    InvCipher((state_t*)input_register, ctx.RoundKey);
+
+  //copy ciphered/deciphered input_register to output
+  memcpy (output, input_register, 16*sizeof(uint8_t) );
         
 }
 
