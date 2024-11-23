@@ -14,8 +14,36 @@
 #include <stdio.h>
 #include "aes.h"
 
+//if supplied IV is only 32-bit in value, then expand it to a 128-bit IV using these LFSR taps
+void lfsr_32_to_128(uint8_t * iv)
+{
+  uint64_t lfsr = 0, bit = 0;
+
+  lfsr = ((uint64_t)iv[0] << 24ULL) + ((uint64_t)iv[1] << 16ULL) + ((uint64_t)iv[2] << 8ULL)  + ((uint64_t)iv[3] << 0ULL);
+
+  uint8_t cnt = 0, x = 32;
+
+  for(cnt = 0;cnt < 96; cnt++) 
+  {
+    //32,22,2,1 (per Xilinx XAPP 052) Table 3: Taps for Maximum-Length LFSR Counters
+    bit = ( (lfsr >> 31) ^ (lfsr >> 21) ^ (lfsr >> 1) ^ (lfsr >> 0) ) & 0x1;
+    lfsr = (lfsr << 1) | bit;
+
+    //continue packing iv
+    iv[x/8] = (iv[x/8] << 1) + bit;
+
+    x++;
+  }
+
+  fprintf (stderr, "\n IV(128): ");
+  for (x = 0; x < 16; x++)
+    fprintf (stderr, "%02X", iv[x]);
+  fprintf (stderr, "\n");
+
+}
+
 //if supplied IV is only 64-bit in value, then expand it to a 128-bit IV using these LFSR taps
-void LFSR128(uint8_t * iv)
+void lfsr_64_to_128(uint8_t * iv)
 {
   uint64_t lfsr = 0, bit = 0;
 
@@ -137,6 +165,9 @@ int main ()
   }
   fprintf (stderr, "\n");
 
+  fprintf (stderr, "\n Include any leading zeroes in key values, IV, and Input Message!");
+  fprintf (stderr, "\n");
+
   memset (input_string, 0, 2048*sizeof(char));
   fprintf (stderr, " Enter Key: ");
   scanf("%s", input_string); //no white space allowed
@@ -149,28 +180,51 @@ int main ()
       fprintf (stderr, "%02X", key[i]);
 
   memset (input_string, 0, 2048*sizeof(char));
-  fprintf (stderr, "\n Enter IV: ");
+  fprintf (stderr, "\n Enter IV (4, 8, or 16 octets): ");
   scanf("%s", input_string); //no white space allowed
   input_string[2999] = '\0'; //terminate string
   len = parse_raw_user_string(input_string, iv);
 
-  if (len < 16)
+  //print input IV len in octets
+  fprintf (stderr, "\n  IV Len: %02d Octets;", len);
+
+  //if supplied IV len is 4 octets (32-bit)
+  if (len == 4)
+  {
+    //print iv
+    fprintf (stderr, "\n  IV(32): ");
+    for (i = 0; i < len; i++)
+        fprintf (stderr, "%02X", iv[i]);
+
+    //LFSR to expand a 32-bit IV into a 128-bit IV
+    lfsr_32_to_128(iv);
+  }
+
+  //if supplied IV len is 8 octets (64-bit)
+  else if (len == 8)
   {
     //print iv
     fprintf (stderr, "\n  IV(64): ");
     for (i = 0; i < len; i++)
         fprintf (stderr, "%02X", iv[i]);
 
-    //LFSR to expand a 64-bit IV to a 128-bit IV
-    LFSR128(iv);
+    //LFSR to expand a 64-bit IV into a 128-bit IV
+    lfsr_64_to_128(iv);
   }
 
-  else
+  //if supplied IV len is 16 octets (128-bit)
+  else if (len == 16)
   {
     fprintf (stderr, "\n IV(128): ");
     for (i = 0; i < len; i++)
       fprintf (stderr, "%02X", iv[i]);
     fprintf (stderr, "\n");
+  }
+
+  else
+  {
+    fprintf (stderr, "\n Abnormal IV len %d octets; Please enter 32-bit(8 hex char/4 octets),\n 64-bit (16 hex char/8 octets), or 128-bit (32 hex char/16 octet) IV; ", len);
+    return 0;
   }
 
   memset (input_string, 0, 2048*sizeof(char));
