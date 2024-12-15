@@ -7,9 +7,9 @@
  *-----------------------------------------------------------------------------*/
 
 //bit and byte utility prototyes
-uint64_t convert_bits_into_output(uint8_t * input, int len);
-void pack_bit_array_into_byte_array (uint8_t * input, uint8_t * output, int len);
-void unpack_byte_array_into_bit_array (uint8_t * input, uint8_t * output, int len);
+uint64_t convert_bits_into_output_ta(uint8_t * input, int len);
+void pack_bit_array_into_byte_array_ta (uint8_t * input, uint8_t * output, int len);
+void unpack_byte_array_into_bit_array_ta (uint8_t * input, uint8_t * output, int len);
 
 //tailor made aes function prototypes, convenience wrapper functions
 void aes_ctr_bitwise_payload_crypt (uint8_t * iv, uint8_t * key, uint8_t * payload, int type);

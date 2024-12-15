@@ -182,7 +182,7 @@ static void KeyExpansion(uint8_t* RoundKey, const uint8_t* Key)
 }
 
 //input bit array, return output as up to a 64-bit value
-uint64_t convert_bits_into_output(uint8_t * input, int len)
+uint64_t convert_bits_into_output_ta(uint8_t * input, int len)
 {
   int i;
   uint64_t output = 0;
@@ -195,15 +195,15 @@ uint64_t convert_bits_into_output(uint8_t * input, int len)
 }
 
 //take x amount of bits and pack into len amount of bytes (symmetrical)
-void pack_bit_array_into_byte_array (uint8_t * input, uint8_t * output, int len)
+void pack_bit_array_into_byte_array_ta (uint8_t * input, uint8_t * output, int len)
 {
   int i;
   for (i = 0; i < len; i++)
-    output[i] = (uint8_t)convert_bits_into_output(&input[i*8], 8);
+    output[i] = (uint8_t)convert_bits_in_tato_output(&input[i*8], 8);
 }
 
 //take len amount of bytes and unpack back into a bit array
-void unpack_byte_array_into_bit_array (uint8_t * input, uint8_t * output, int len)
+void unpack_byte_array_into_bit_array_ta (uint8_t * input, uint8_t * output, int len)
 {
   int i = 0, k = 0;
   for (i = 0; i < len; i++)
@@ -649,13 +649,13 @@ void aes_ctr_bitwise_payload_crypt (uint8_t * iv, uint8_t * key, uint8_t * paylo
   //pack input bit-wise payload to byte array
   uint8_t payload_bytes[16];
   memset (payload_bytes, 0, sizeof(payload_bytes));
-  pack_bit_array_into_byte_array (payload, payload_bytes, 16);
+  pack_bit_array_into_byte_array_ta (payload, payload_bytes, 16);
 
   //pass to internal CTR handler for payload
   AES_CTR_xcrypt_buffer(&ctx, payload_bytes, 16);
 
   //unpack output bytes back to bits
-  unpack_byte_array_into_bit_array(payload_bytes, payload, 16);
+  unpack_byte_array_into_bit_array_ta(payload_bytes, payload, 16);
 
 }
 
