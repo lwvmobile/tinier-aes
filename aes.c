@@ -199,7 +199,7 @@ void pack_bit_array_into_byte_array_ta (uint8_t * input, uint8_t * output, int l
 {
   int i;
   for (i = 0; i < len; i++)
-    output[i] = (uint8_t)convert_bits_in_tato_output(&input[i*8], 8);
+    output[i] = (uint8_t)convert_bits_into_output_ta(&input[i*8], 8);
 }
 
 //take len amount of bytes and unpack back into a bit array
