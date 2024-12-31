@@ -622,6 +622,101 @@ void aes_cfb_bytewise_payload_crypt (uint8_t * iv, uint8_t * key, uint8_t * in, 
         
 }
 
+//byte-wise AES CBC (Cipher Block Chaining) //Yeah, I know this already exists, but wanted a custom convenience wrapper version
+//input in is a uint8_t bytewise array,is the input to be ciphered (encrypted or decrypted)
+//input iv is a 16-byte uint8_t array of initialization vector
+//input key is up to 32-byte uint8_t array of key value
+//input type is the type/key len of AES required (0-128, 1-192, 2-256)
+//input nblocks is the number of rounds of 16-byte payload blocks requried (last block will need padding if not flush)
+//output out is a uint8_t bytewise array, each round filled with 16-bytes of cfb ciphered output (encrypted or decrypted)
+//de is a bit-flag signalling to run Cipher (encrypt) on 1, or InvCipher (decrypt) on 0
+void aes_cbc_bytewise_payload_crypt (uint8_t * iv, uint8_t * key, uint8_t * in, uint8_t * out, int type, int nblocks, int de)
+{
+
+  int i, j;
+  uint8_t input_register[16]; //Input Register
+  memset (input_register, 0, sizeof(input_register));
+
+  //Set values specific to type (128/192/256)
+  if (type == 0) //128
+  {
+    Nb = 4;
+    Nk = 4;
+    Nr = 10;
+  }
+  else if (type == 1) //192
+  {
+    Nb = 4;
+    Nk = 6;
+    Nr = 12;
+  }
+  else //if (type == 2) //256
+  {
+    Nb = 4;
+    Nk = 8;
+    Nr = 14;
+  }
+
+  struct AES_ctx ctx;
+
+  //load first round of input_register accordingly
+  if (de)
+    memcpy (input_register, iv, 16*sizeof(uint8_t) );
+  else memcpy (input_register, in, 16*sizeof(uint8_t) );
+
+  //initialize the key variable for the Cipher function
+  memset (ctx.RoundKey, 0, 240*sizeof(uint8_t));
+  KeyExpansion(ctx.RoundKey, key);
+
+  //
+  for (i = 0; i < nblocks; i++)
+  {
+
+    //run encryption or decryption depending on de value
+    if (de) //encrypt
+    {
+
+      //xor the current input 'in' pt to the current state of the input_register for cbc feedback
+      for (j = 0; j < 16; j++)
+        input_register[j] ^= in[j+(i*16)];
+
+      Cipher((state_t*)input_register, ctx.RoundKey);
+
+      //copy ciphered input_register to output 'out'
+      memcpy (out+(i*16), input_register, 16*sizeof(uint8_t) );
+
+    }
+      
+    else   //decrypt
+    {
+
+      InvCipher((state_t*)input_register, ctx.RoundKey);
+
+      //copy ciphered input_register to output 'out'
+      memcpy (out+(i*16), input_register, 16*sizeof(uint8_t) );
+
+      //xor the current output by IV, or by last received CT
+      if (i == 0)
+      {
+        for (j = 0; j < 16; j++)
+          out[j] ^= iv[j];
+      }
+      else
+      {
+        for (j = 0; j < 16; j++)
+          out[j+(i*16)] ^= in[j+((i-1)*16)];
+      }
+
+      //copy in next segment for input_register (if not last)
+      if (i < nblocks)
+        memcpy(input_register, in+((i+1)*16), 16*sizeof(uint8_t) );
+
+    }
+
+  }
+        
+}
+
 //byte-wise output of AES ECB Ciphering/Deciphering
 //input is uint8_t byte-wise (16-bytes) data to be ciphered or deciphered
 //input key is up to 32-byte uint8_t array of key value
