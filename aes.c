@@ -568,7 +568,8 @@ void aes_ofb_keystream_output (uint8_t * iv, uint8_t * key, uint8_t * output, in
 //input type is the type/key len of AES required (0-128, 1-192, 2-256)
 //input nblocks is the number of rounds of 16-byte payload blocks requried (last block will need padding if not flush)
 //output out is a uint8_t bytewise array, each round filled with 16-bytes of cfb ciphered output (encrypted or decrypted)
-void aes_cfb_bytewise_payload_crypt (uint8_t * iv, uint8_t * key, uint8_t * in, uint8_t * out, int type, int nblocks)
+//de is a bit-flag signalling to run Cipher (encrypt) on 1, or InvCipher (decrypt) on 0
+void aes_cfb_bytewise_payload_crypt (uint8_t * iv, uint8_t * key, uint8_t * in, uint8_t * out, int type, int nblocks, int de)
 {
 
   int i, j;
@@ -617,6 +618,10 @@ void aes_cfb_bytewise_payload_crypt (uint8_t * iv, uint8_t * key, uint8_t * in, 
 
     //copy ciphered/xor'd input_register to output 'out'
     memcpy (out+(i*16), input_register, 16*sizeof(uint8_t) );
+
+    //if running in decryption mode, we feed in the next round of input
+    if (!de)
+      memcpy(input_register, in+(i*16), 16*sizeof(uint8_t));
 
   }
         
