@@ -722,6 +722,68 @@ void aes_cbc_bytewise_payload_crypt (uint8_t * iv, uint8_t * key, uint8_t * in, 
         
 }
 
+//byte-wise AES CBC_MAC (Cipher Block Chaining Message Authentication) //This is slightly different than above, no IV is present, 
+//but if iv is desireable, it will need to be pre-XOR'd with the first plaintext input block by the calling function
+//input in is a uint8_t bytewise array, is the input to be ciphered. 
+//input key is up to 32-byte uint8_t array of key value
+//input type is the type/key len of AES required (0-128, 1-192, 2-256)
+//input nblocks is the number of rounds of 16-byte payload blocks requried (last block will need padding if not flush)
+//output out is a uint8_t bytewise array, with only the final round output as the MAC octets
+//NOTE: When doing a cbc_mac, you should only run it in the forward (encryption) mode to get the mac bytes
+void aes_cbc_mac_generator (uint8_t * key, uint8_t * in, uint8_t * out, int type, int nblocks)
+{
+
+  int i, j;
+  uint8_t input_register[16]; //Input Register
+  memset (input_register, 0, sizeof(input_register));
+
+  //Set values specific to type (128/192/256)
+  if (type == 0) //128
+  {
+    Nb = 4;
+    Nk = 4;
+    Nr = 10;
+  }
+  else if (type == 1) //192
+  {
+    Nb = 4;
+    Nk = 6;
+    Nr = 12;
+  }
+  else //if (type == 2) //256
+  {
+    Nb = 4;
+    Nk = 8;
+    Nr = 14;
+  }
+
+  struct AES_ctx ctx;
+
+  //initialize the key variable for the Cipher function
+  memset (ctx.RoundKey, 0, 240*sizeof(uint8_t));
+  KeyExpansion(ctx.RoundKey, key);
+
+  //
+  for (i = 0; i < nblocks; i++)
+  {
+
+    //xor the current input 'in' pt to the current state of the input_register for cbc feedback
+    //if this is the first iteration, this will load the first round plain text instead
+    for (j = 0; j < 16; j++)
+      input_register[j] ^= in[j+((i+0)*16)];
+
+    Cipher((state_t*)input_register, ctx.RoundKey);
+
+    //debug, load out all intermediate output register values
+    // memcpy (out+(i*16), input_register, 16*sizeof(uint8_t) );
+
+  }
+
+  //copy final ciphered input_register to output 'out', user will determine how many bytes of output they want for MAC
+  memcpy (out, input_register, 16*sizeof(uint8_t) );
+        
+}
+
 //byte-wise output of AES ECB Ciphering/Deciphering
 //input is uint8_t byte-wise (16-bytes) data to be ciphered or deciphered
 //input key is up to 32-byte uint8_t array of key value
