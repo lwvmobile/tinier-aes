@@ -27,4 +27,3 @@ void aes_ecb_bytewise_payload_crypt (uint8_t * input, uint8_t * key, uint8_t * o
 #ifdef __cplusplus
 }
 #endif
-

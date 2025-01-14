@@ -110,7 +110,7 @@ uint16_t parse_raw_user_string (char * input, uint8_t * output)
   return len;
 }
 
-int main ()
+int main (void)
 {
 
   uint8_t i = 0;

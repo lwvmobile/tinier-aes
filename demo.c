@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include "aes.h"
 
-int main ()
+int main (void)
 {
 
   time_t ts = time(NULL);
